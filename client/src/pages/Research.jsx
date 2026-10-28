@@ -1,0 +1,27 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, ChevronDown, ExternalLink, Filter, FlaskConical, Info, Search } from "lucide-react";
+
+const topics=[
+ {category:"Energy",title:"Inference energy is workload-dependent",summary:"Token count is an input to an estimate, not a direct measurement of electricity. Architecture, accelerator hardware, batch size, sequence length and utilisation can change energy per token.",detail:"A defensible factor should identify the model or model class, hardware, batch configuration, workload mix, measurement method and whether the result includes facility overhead. Avoid assuming all tokens have identical cost.",source:"Methodology guidance — add a traceable source before production use."},
+ {category:"Water",title:"Define the water boundary",summary:"Water use can refer to direct cooling water, electricity-related water, water withdrawal, or water consumption. These are not interchangeable.",detail:"Record the geography, time period, water system, cooling technology and whether the factor represents withdrawal or consumption. Avoid a universal litres-per-token value without a clearly stated boundary.",source:"Boundary note — bundled water intensity is illustrative."},
+ {category:"Carbon",title:"Carbon depends on electricity intensity",summary:"The same electricity demand can have different estimated emissions on grids with different carbon intensities.",detail:"Use a sourced grid factor appropriate to the location and time boundary. State whether the factor is average or marginal, and whether upstream lifecycle emissions are included.",source:"Calculation boundary — grid intensity is user-editable."},
+ {category:"Uncertainty",title:"Communicate uncertainty honestly",summary:"Publicly available provider-specific energy measurements may be incomplete or not comparable across systems.",detail:"Use ranges or scenario analysis when the evidence supports them. Label assumptions, distinguish measured from modelled values, and avoid excess decimal precision that suggests certainty.",source:"Data quality note — this app labels bundled factors as low-confidence demo assumptions."},
+ {category:"Methods",title:"Version every environmental factor",summary:"A factor is only useful when users can see where it came from and what it represents.",detail:"Store the source URL, publication date, access date, model/hardware scope, units, boundary, version and confidence. Recalculate saved outputs if a factor is updated only with an explicit version trail.",source:"Recommended metadata schema for future production dataset."}
+];
+const categories=["All","Energy","Water","Carbon","Uncertainty","Methods"];
+export default function Research(){
+ const [category,setCategory]=useState("All"),[query,setQuery]=useState(""),[expanded,setExpanded]=useState(0);
+ const filtered=topics.filter(t=>(category==="All"||t.category===category)&&`${t.title} ${t.summary} ${t.category}`.toLowerCase().includes(query.toLowerCase()));
+ return <div className="page-stack">
+  <div className="page-title-row"><div><div className="section-kicker">KNOWLEDGE & EVIDENCE</div><h1>Environmental research library</h1><p>Understand the assumptions, boundaries and data quality behind footprint estimates.</p></div><span className="page-index">04 <span>/ 05</span></span></div>
+  <div className="research-intro panel"><div className="research-intro-icon"><FlaskConical size={23}/></div><div><h3>Evidence before precision</h3><p>This starter library contains methodology notes, not a curated bibliography. Add original publications and verified source metadata before using the platform for scientific claims.</p></div><span className="tiny-tag">METHODOLOGY NOTES</span></div>
+  <div className="research-toolbar"><div className="search-box"><Search size={17}/><input aria-label="Search research topics" placeholder="Search topics and assumptions…" value={query} onChange={e=>setQuery(e.target.value)}/></div><div className="filter-label"><Filter size={15}/>{filtered.length} topics</div></div>
+  <div className="category-tabs" role="group" aria-label="Filter research categories">{categories.map(c=><button key={c} type="button" className={category===c?"selected":""} onClick={()=>setCategory(c)}>{c}</button>)}</div>
+  <div className="research-list">{filtered.map((t,i)=><motion.article key={t.title} layout className={`research-card panel hover-lift ${expanded===i?"expanded":""}`} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:.25,delay:i*.035}}>
+   <button className="research-card-button" type="button" onClick={()=>setExpanded(expanded===i?-1:i)} aria-expanded={expanded===i}><span className={`research-category category-${t.category.toLowerCase()}`}>{t.category}</span><span className="research-card-copy"><strong>{t.title}</strong><small>{t.summary}</small></span><span className="research-expand"><ChevronDown size={17}/></span></button>
+   <AnimatePresence>{expanded===i&&<motion.div className="research-detail" initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}><p>{t.detail}</p><div className="source-note"><Info size={14}/>{t.source}</div></motion.div>}</AnimatePresence>
+  </motion.article>)}</div>
+  {!filtered.length&&<div className="empty-state"><BookOpen size={24}/><strong>No matching topics</strong><p>Try another search or select a different category.</p></div>}
+ </div>;
+}
